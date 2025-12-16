@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Numerix - Open Puzzle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    .logo {
+      font-size: 3em;
+      margin-bottom: 10px;
+    }
+    h1 {
+      color: #4ade80;
+      margin-bottom: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+    }
+    .subtitle {
+      color: #94a3b8;
+      margin-bottom: 30px;
+      font-size: 1.1em;
+    }
+    .code-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .code {
+      font-family: monospace;
+      font-size: 1.8em;
+      font-weight: 700;
+      color: #4ade80;
+      background: rgba(74, 222, 128, 0.1);
+      padding: 15px 25px;
+      border-radius: 12px;
+      border: 2px solid rgba(74, 222, 128, 0.3);
+      user-select: all;
+      letter-spacing: 0.05em;
+    }
+    .copy-btn {
+      background: rgba(74, 222, 128, 0.2);
+      border: 2px solid #4ade80;
+      color: #4ade80;
+      padding: 15px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .copy-btn:hover {
+      background: rgba(74, 222, 128, 0.3);
+      transform: scale(1.02);
+    }
+    .copy-btn:active {
+      transform: scale(0.98);
+    }
+    .copy-btn.copied {
+      background: #4ade80;
+      border-color: #4ade80;
+      color: #1a1a2e;
+    }
+    .grid-info {
+      font-size: 1.2em;
+      color: #94a3b8;
+      margin: 15px 0;
+    }
+    .grid-info .size {
+      font-family: monospace;
+      font-size: 1.3em;
+      color: #4ade80;
+      font-weight: 700;
+    }
+    .btn {
+      display: inline-block;
+      margin: 10px;
+      padding: 18px 40px;
+      background: #4ade80;
+      color: #1a1a2e;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      font-size: 16px;
+      transition: all 0.2s;
+      letter-spacing: 0.05em;
+    }
+    .btn:hover {
+      transform: scale(1.02);
+      box-shadow: 0 10px 30px rgba(74, 222, 128, 0.3);
+    }
+    .btn:active {
+      transform: scale(0.98);
+    }
+    .store-link {
+      margin-top: 30px;
+      color: #94a3b8;
+    }
+    .store-link a {
+      color: #4ade80;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .store-link a:hover {
+      text-decoration: underline;
+    }
+    .hint {
+      color: #64748b;
+      font-size: 14px;
+      margin-top: 30px;
+      max-width: 300px;
+      line-height: 1.5;
+    }
+    .error {
+      color: #f87171;
+      background: rgba(248, 113, 113, 0.1);
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">#</div>
+  <h1>NUMERIX</h1>
+
+  <div id="content">
+    <p class="subtitle">You've been challenged to solve this puzzle:</p>
+
+    <div class="code-container">
+      <span class="code" id="codeDisplay">Loading...</span>
+      <button class="copy-btn" id="copyBtn">Copy</button>
+    </div>
+
+    <p class="grid-info" id="gridInfo" style="display: none;">
+      Grid size: <span class="size" id="gridSize"></span>
+    </p>
+
+    <a id="openApp" class="btn" href="#">GET THE APP</a>
+
+    <p class="store-link">
+      <a href="https://play.google.com/store/apps/details?id=com.ataraxianstudios.numerix" target="_blank">
+        Download from Google Play
+      </a>
+    </p>
+
+    <p class="hint">Copy the puzzle code above and enter it in the Endless mode using the # button.</p>
+  </div>
+
+  <div id="errorContent" style="display: none;">
+    <p class="error">Invalid or missing puzzle code.</p>
+    <a class="btn" href="https://play.google.com/store/apps/details?id=com.ataraxianstudios.numerix">
+      GET NUMERIX
+    </a>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.ataraxianstudios.numerix';
+
+    // Validate code format: {gridSize}-{base36seed}
+    function isValidCode(code) {
+      if (!code) return false;
+      const parts = code.split('-');
+      if (parts.length !== 2) return false;
+      const gridSize = parseInt(parts[0]);
+      if (isNaN(gridSize) || gridSize < 4 || gridSize > 8) return false;
+      if (!parts[1] || parts[1].length === 0) return false;
+      return true;
+    }
+
+    function getGridSize(code) {
+      if (!code) return null;
+      const parts = code.split('-');
+      if (parts.length !== 2) return null;
+      return parseInt(parts[0]);
+    }
+
+    if (isValidCode(code)) {
+      document.getElementById('content').style.display = 'block';
+      document.getElementById('errorContent').style.display = 'none';
+
+      document.getElementById('codeDisplay').textContent = code.toUpperCase();
+
+      const gridSize = getGridSize(code);
+      if (gridSize) {
+        document.getElementById('gridSize').textContent = gridSize + '×' + gridSize;
+        document.getElementById('gridInfo').style.display = 'block';
+      }
+
+      // Open app button - just goes to Play Store since custom schemes aren't reliable
+      document.getElementById('openApp').href = playStoreUrl;
+
+      // Copy button functionality
+      document.getElementById('copyBtn').addEventListener('click', function() {
+        navigator.clipboard.writeText(code.toUpperCase()).then(function() {
+          const btn = document.getElementById('copyBtn');
+          btn.textContent = 'Copied!';
+          btn.classList.add('copied');
+          setTimeout(function() {
+            btn.textContent = 'Copy';
+            btn.classList.remove('copied');
+          }, 2000);
+        });
+      });
+    } else {
+      document.getElementById('content').style.display = 'none';
+      document.getElementById('errorContent').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
