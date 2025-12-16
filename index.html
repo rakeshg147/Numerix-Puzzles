@@ -159,15 +159,16 @@
       Grid size: <span class="size" id="gridSize"></span>
     </p>
 
-    <a id="openApp" class="btn" href="#">GET THE APP</a>
+    <button id="openApp" class="btn">OPEN IN APP</button>
 
     <p class="store-link">
+      Don't have the app?
       <a href="https://play.google.com/store/apps/details?id=com.ataraxianstudios.numerix" target="_blank">
-        Download from Google Play
+        Get it on Google Play
       </a>
     </p>
 
-    <p class="hint">Copy the puzzle code above and enter it in the Endless mode using the # button.</p>
+    <p class="hint">Or copy the puzzle code above and enter it in the Endless mode using the # button.</p>
   </div>
 
   <div id="errorContent" style="display: none;">
@@ -212,8 +213,18 @@
         document.getElementById('gridInfo').style.display = 'block';
       }
 
-      // Open app button - just goes to Play Store since custom schemes aren't reliable
-      document.getElementById('openApp').href = playStoreUrl;
+      // Open app button - try deep link first, fallback to Play Store
+      document.getElementById('openApp').addEventListener('click', function() {
+        const deepLink = 'numerix://play?code=' + code.toUpperCase();
+
+        // Try to open the app
+        window.location.href = deepLink;
+
+        // Fallback to Play Store after a delay if app doesn't open
+        setTimeout(function() {
+          window.location.href = playStoreUrl;
+        }, 1500);
+      });
 
       // Copy button functionality
       document.getElementById('copyBtn').addEventListener('click', function() {
