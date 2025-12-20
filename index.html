@@ -93,6 +93,18 @@
       color: #4ade80;
       font-weight: 700;
     }
+    .time-challenge {
+      font-size: 1.3em;
+      color: #fbbf24;
+      margin: 15px 0;
+      font-weight: 600;
+    }
+    .time-challenge .time {
+      font-family: monospace;
+      font-size: 1.2em;
+      color: #fbbf24;
+      font-weight: 700;
+    }
     .btn {
       display: inline-block;
       margin: 10px;
@@ -159,6 +171,10 @@
       Grid size: <span class="size" id="gridSize"></span>
     </p>
 
+    <p class="time-challenge" id="timeChallenge" style="display: none;">
+      Beat this time: <span class="time" id="timeToBeat"></span>
+    </p>
+
     <button id="openApp" class="btn">OPEN IN APP</button>
 
     <p class="store-link">
@@ -181,7 +197,15 @@
   <script>
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
+    const time = params.get('time');
     const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.ataraxianstudios.numerix';
+
+    // Format seconds as MM:SS
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
+    }
 
     // Validate code format: {gridSize}-{base36seed}
     function isValidCode(code) {
@@ -213,9 +237,19 @@
         document.getElementById('gridInfo').style.display = 'block';
       }
 
+      // Display time to beat if present
+      const timeSeconds = time ? parseInt(time) : null;
+      if (timeSeconds && !isNaN(timeSeconds) && timeSeconds > 0) {
+        document.getElementById('timeToBeat').textContent = formatTime(timeSeconds);
+        document.getElementById('timeChallenge').style.display = 'block';
+      }
+
       // Open app button - try deep link first, fallback to Play Store
       document.getElementById('openApp').addEventListener('click', function() {
-        const deepLink = 'numerix://play?code=' + code.toUpperCase();
+        let deepLink = 'numerix://play?code=' + code.toUpperCase();
+        if (timeSeconds && !isNaN(timeSeconds) && timeSeconds > 0) {
+          deepLink += '&time=' + timeSeconds;
+        }
 
         // Try to open the app
         window.location.href = deepLink;
