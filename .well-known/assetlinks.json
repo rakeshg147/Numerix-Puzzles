@@ -3,6 +3,6 @@
   "target": {
     "namespace": "android_app",
     "package_name": "com.ataraxianstudios.numerix",
-    "sha256_cert_fingerprints": ["EB:91:A4:45:D4:87:6C:AF:61:97:77:20:85:7E:00:AB:31:0C:3F:A0:4E:1F:5B:35:9A:E4:03:03:60:0C:54:FF"]
+    "sha256_cert_fingerprints": ["A3:D7:BE:C2:49:F3:5B:F5:3E:AD:5A:B2:22:A7:5F:1C:FA:CE:74:3B:58:0D:63:65:E0:90:82:69:56:70:ED:4D"]
   }
 }]
